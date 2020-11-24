@@ -1,65 +1,50 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Error from 'next/error'
+import Link from 'next/link'
+import Layout from '../components/Layout'
+import StoryList from '../components/StoryList'
 
-export default function Home() {
+const Home = ({ stories, page }) => {
+  if (stories.length === 0) {
+    return <Error statusCode='503' />
+  }
+
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <Layout title='Home page | Hacker News Clone'>
+      <StoryList stories={stories} />
+      <footer>
+        {page === 2 &&
+          <Link href='/'>
+            <a>Prev Page ({page - 1})</a>
+          </Link>}
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        {page > 2 &&
+          <Link href={`/?page=${page - 1}`}>
+            <a>Prev Page ({page - 1})</a>
+          </Link>}
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
+        <Link href={`/?page=${page + 1}`}>
+          <a>Next Page ({page + 1})</a>
+        </Link>
       </footer>
-    </div>
+    </Layout>
   )
 }
+
+Home.getInitialProps = async (ctx) => {
+  let stories
+  let page
+
+  const { req, res, query } = ctx
+
+  try {
+    page = Number(query.page) || 1
+    const res = await fetch(`https://node-hnapi.herokuapp.com/news?page=${page}`)
+    stories = await res.json()
+  } catch (error) {
+    console.log(error)
+    stories = []
+  }
+  return { stories, page }
+}
+
+export default Home
