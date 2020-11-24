@@ -8,7 +8,7 @@ const Story = ({ story }) => {
   }
 
   return (
-    <Layout title={`${story.title} | Hacker News Clone`}>
+    <Layout title={`${story.title} | Hacker News Clone`} backButton='true'>
       <main className='single-story'>
         <h1 className='single-story__title'><a href={story.url}>{story.title}</a></h1>
         <div className='single-story__details'>
